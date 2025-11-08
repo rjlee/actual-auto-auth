@@ -62,6 +62,34 @@ function manualFetch(url, options = {}) {
 }
 
 describe("createAuthServer", () => {
+  test("home page renders default link list", async () => {
+    const instance = await startServer({
+      homeTitle: "Stack Start",
+      homeLinks: [
+        { name: "Traefik Dashboard", href: "/dashboard/" },
+        { name: "Actual Auto Categorise", href: "/categorise/" },
+      ],
+    });
+    const res = await manualFetch(`${instance.baseUrl}/`);
+    await instance.close();
+
+    expect(res.status).toBe(200);
+    expect(res.body).toContain(">Stack Start<");
+    expect(res.body).toContain('href="/dashboard/"');
+    expect(res.body).toContain('href="/categorise/"');
+  });
+
+  test("home page supports HEAD requests", async () => {
+    const instance = await startServer({
+      homeLinks: [{ name: "Dashboard", href: "/dashboard/" }],
+    });
+    const res = await manualFetch(`${instance.baseUrl}/`, { method: "HEAD" });
+    await instance.close();
+
+    expect(res.status).toBe(200);
+    expect(res.body).toBe("");
+  });
+
   test("throws when ACTUAL_PASSWORD missing", () => {
     expect(() => createAuthServer()).toThrow(/ACTUAL_PASSWORD/);
   });
