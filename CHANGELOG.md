@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/rjlee/actual-auto-auth/compare/v1.0.4...v1.0.5) (2025-11-08)
+
+
+### Bug Fixes
+
+* allow Location header specification based on protocol ([a4506dc](https://github.com/rjlee/actual-auto-auth/commit/a4506dc07d44a19da0ffd3fa1a1000804ebca40f))
+
 ## [1.0.4](https://github.com/rjlee/actual-auto-auth/compare/v1.0.3...v1.0.4) (2025-11-08)
 
 
