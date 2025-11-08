@@ -113,10 +113,21 @@ function createAuthServer(options = {}) {
       req.url,
       `http://${req.headers.host || "localhost"}`,
     );
+    const headerAppName = (req.headers["x-actual-app-name"] ?? "")
+      .toString()
+      .trim();
+    const headerCookieName = (req.headers["x-actual-cookie-name"] ?? "")
+      .toString()
+      .trim();
+    const effectiveAppName = headerAppName || appName;
+    const requestCookieName = headerCookieName || cookieName;
 
     if (req.method === "GET" && parsedUrl.pathname === "/check") {
       const cookies = parseCookies(req.headers.cookie);
-      const sessionValue = readCookie(cookies[cookieName], signingSecret);
+      const sessionValue = readCookie(
+        cookies[requestCookieName],
+        signingSecret,
+      );
       if (sessionValue) {
         res.statusCode = 200;
         res.end("OK");
@@ -140,7 +151,7 @@ function createAuthServer(options = {}) {
         return;
       }
       const page = renderLoginPage({
-        appName,
+        appName: effectiveAppName,
         next: normaliseNextPath(parsedUrl.searchParams.get("next") || "/"),
       });
       res.statusCode = 200;
@@ -156,7 +167,7 @@ function createAuthServer(options = {}) {
       const nextPath = normaliseNextPath(params.get("next") || "/");
       if (password !== actualPassword) {
         const page = renderLoginPage({
-          appName,
+          appName: effectiveAppName,
           error: "Invalid password",
           next: nextPath,
         });
@@ -171,7 +182,7 @@ function createAuthServer(options = {}) {
       });
       res.setHeader(
         "Set-Cookie",
-        `${cookieName}=${encoded}; ${cookieFlags(req, {
+        `${requestCookieName}=${encoded}; ${cookieFlags(req, {
           maxAgeSeconds: cookieMaxAgeSeconds,
           secureOnly: enforceSecureCookies,
         })}`,
@@ -183,7 +194,10 @@ function createAuthServer(options = {}) {
     if (req.method === "POST" && parsedUrl.pathname === "/auth/logout") {
       res.setHeader(
         "Set-Cookie",
-        `${cookieName}=; ${cookieFlags(req, { maxAgeSeconds: 0, secureOnly: enforceSecureCookies })}`,
+        `${requestCookieName}=; ${cookieFlags(req, {
+          maxAgeSeconds: 0,
+          secureOnly: enforceSecureCookies,
+        })}`,
       );
       buildRedirect(req, res, "/auth/login");
       return;

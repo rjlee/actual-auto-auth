@@ -82,6 +82,18 @@ describe("createAuthServer", () => {
     expect(res.body).toContain('value="/train"');
   });
 
+  test("login page honours header override", async () => {
+    const instance = await startServer({ appName: "Default Service" });
+    const res = await manualFetch(`${instance.baseUrl}/auth/login`, {
+      headers: { "x-actual-app-name": "Categorise UI" },
+    });
+    await instance.close();
+
+    expect(res.status).toBe(200);
+    expect(res.body).toContain("Categorise UI");
+    expect(res.body).not.toContain("Default Service");
+  });
+
   test("successful login sets cookie and redirects", async () => {
     const instance = await startServer({ cookieName: "custom-auth" });
     const res = await manualFetch(`${instance.baseUrl}/auth/login`, {
@@ -99,6 +111,23 @@ describe("createAuthServer", () => {
     );
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     expect(res.headers["set-cookie"][0]).toMatch(/^custom-auth=/);
+  });
+
+  test("cookie name header override is respected", async () => {
+    const instance = await startServer({ cookieName: "default-cookie" });
+    const res = await manualFetch(`${instance.baseUrl}/auth/login`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        "x-actual-cookie-name": "categorise-auth",
+      },
+      body: "password=secret&next=/",
+    });
+    await instance.close();
+
+    expect(res.status).toBe(302);
+    expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
+    expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=/);
   });
 
   test("invalid login renders error and 401", async () => {

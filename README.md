@@ -52,7 +52,7 @@ Published images live at `ghcr.io/rjlee/actual-auto-auth:<tag>` (see [Image tags
 | `ACTUAL_PASSWORD`  | Shared password required to authenticate  | _required_            |
 | `SESSION_SECRET`   | Optional override for signing cookie HMAC | derived from password |
 | `AUTH_COOKIE_NAME` | Cookie name used to persist the session   | `actual-auth`         |
-| `AUTH_APP_NAME`    | Text shown on the login screen            | `Actual Service`      |
+| `AUTH_APP_NAME`    | Default text shown on the login screen    | `Actual Service`      |
 | `PORT`             | Listen port                               | `4000`                |
 
 ## Usage
@@ -96,6 +96,17 @@ services:
 ```
 
 Then attach your upstream service router to `middlewares=actual-forward@docker`.
+
+> Tip: you can reuse a single auth container for multiple services by chaining a Traefik headers middleware that sets `X-Actual-App-Name` (and optionally `X-Actual-Cookie-Name`) per router:
+>
+> ```yaml
+> traefik.http.middlewares.categorise-auth.headers.customrequestheaders.X-Actual-App-Name=Actual Auto Categorise
+> traefik.http.middlewares.categorise-auth.headers.customrequestheaders.X-Actual-Cookie-Name=categorise-auth
+> traefik.http.middlewares.categorise-chain.chain.middlewares=categorise-auth,actual-forward
+> traefik.http.routers.categorise.middlewares=categorise-chain@docker
+> ```
+>
+> Update the downstream service so `AUTH_COOKIE_NAME` matches the value you send via `X-Actual-Cookie-Name`. `X-Actual-App-Name` overrides the login heading dynamically, while `AUTH_APP_NAME` remains the fallback.
 
 ## Testing & linting
 
