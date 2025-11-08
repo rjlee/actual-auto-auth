@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/rjlee/actual-auto-auth/compare/v1.0.2...v1.0.3) (2025-11-08)
+
+
+### Bug Fixes
+
+* support name via header ([874ff8c](https://github.com/rjlee/actual-auto-auth/commit/874ff8c8d7903a9f0bf378a8e6e51dbfc413283b))
+
 ## [1.0.2](https://github.com/rjlee/actual-auto-auth/compare/v1.0.1...v1.0.2) (2025-11-08)
 
 
