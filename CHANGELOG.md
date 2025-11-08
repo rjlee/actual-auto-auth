@@ -1,3 +1,11 @@
+## [1.0.8](https://github.com/rjlee/actual-auto-auth/compare/v1.0.7...v1.0.8) (2025-11-08)
+
+
+### Bug Fixes
+
+* fixing routing ([9d16dd7](https://github.com/rjlee/actual-auto-auth/commit/9d16dd78f4c4625f5233579fbfd3a40b8e3c04e4))
+* fixing tests ([374ca7a](https://github.com/rjlee/actual-auto-auth/commit/374ca7a11a242594992ccc73734f9f3a1293d21f))
+
 ## [1.0.7](https://github.com/rjlee/actual-auto-auth/compare/v1.0.6...v1.0.7) (2025-11-08)
 
 
