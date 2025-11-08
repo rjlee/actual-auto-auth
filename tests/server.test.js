@@ -71,8 +71,8 @@ describe("createAuthServer", () => {
     await instance.close();
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toMatch(
-      /http:\/\/127\.0\.0\.1:\d+\/auth\/login\?app=Actual\+Auto\+Categorise&cookie=categorise-auth&next=%2Fdashboard/,
+    expect(res.headers.location).toBe(
+      "/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth&next=%2Fdashboard",
     );
   });
 
@@ -141,9 +141,7 @@ describe("createAuthServer", () => {
     await instance.close();
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toMatch(
-      /http:\/\/127\.0\.0\.1:\d+\/dashboard/,
-    );
+    expect(res.headers.location).toBe("/dashboard");
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=/);
   });
@@ -199,8 +197,8 @@ describe("createAuthServer", () => {
     expect(res.status).toBe(302);
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=;/);
-    expect(res.headers.location).toMatch(
-      /\/auth\/login\?app=Actual\+Auto\+Categorise&cookie=categorise-auth$/,
+    expect(res.headers.location).toBe(
+      "/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth",
     );
   });
 });
