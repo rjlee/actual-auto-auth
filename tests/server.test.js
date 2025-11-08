@@ -61,48 +61,83 @@ describe("createAuthServer", () => {
 
   test("redirects to login when session missing", async () => {
     const instance = await startServer();
-    const res = await manualFetch(`${instance.baseUrl}/check`);
+    const res = await manualFetch(`${instance.baseUrl}/check`, {
+      headers: {
+        "x-actual-app-name": "Actual Auto Categorise",
+        "x-actual-cookie-name": "categorise-auth",
+        "x-forwarded-uri": "/dashboard",
+      },
+    });
     await instance.close();
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toMatch(
-      /http:\/\/127\.0\.0\.1:\d+\/auth\/login\?next=%2F/,
+      /http:\/\/127\.0\.0\.1:\d+\/auth\/login\?app=Actual\+Auto\+Categorise&cookie=categorise-auth&next=%2Fdashboard/,
     );
   });
 
   test("renders login page with custom app name", async () => {
-    const instance = await startServer({ appName: "Actual Auto Categorise" });
+    const instance = await startServer({ appName: "Default Name" });
     const res = await manualFetch(
-      `${instance.baseUrl}/auth/login?next=%2Ftrain`,
+      `${instance.baseUrl}/auth/login?app=Actual%20Auto%20Categorise&cookie=categorise-auth&next=%2Ftrain`,
     );
     await instance.close();
 
     expect(res.status).toBe(200);
     expect(res.body).toContain("Actual Auto Categorise");
     expect(res.body).toContain('value="/train"');
+    expect(res.body).toContain(
+      'action="/auth/login?app=Actual+Auto+Categorise&amp;cookie=categorise-auth"',
+    );
+  });
+
+  test("login page honours headers when query missing", async () => {
+    const instance = await startServer({ appName: "Default Name" });
+    const res = await manualFetch(`${instance.baseUrl}/auth/login?next=%2F`, {
+      headers: {
+        "x-actual-app-name": "Header App",
+        "x-actual-cookie-name": "header-cookie",
+      },
+    });
+    await instance.close();
+
+    expect(res.status).toBe(200);
+    expect(res.body).toContain("Header App");
+    expect(res.body).toContain(
+      'action="/auth/login?app=Header+App&amp;cookie=header-cookie"',
+    );
   });
 
   test("login page honours header override", async () => {
     const instance = await startServer({ appName: "Default Service" });
-    const res = await manualFetch(`${instance.baseUrl}/auth/login`, {
-      headers: { "x-actual-app-name": "Categorise UI" },
+    const res = await manualFetch(`${instance.baseUrl}/auth/login?next=%2F`, {
+      headers: {
+        "x-actual-app-name": "Categorise UI",
+        "x-actual-cookie-name": "categorise-auth",
+      },
     });
     await instance.close();
 
     expect(res.status).toBe(200);
     expect(res.body).toContain("Categorise UI");
     expect(res.body).not.toContain("Default Service");
+    expect(res.body).toContain(
+      'action="/auth/login?app=Categorise+UI&amp;cookie=categorise-auth"',
+    );
   });
 
   test("successful login sets cookie and redirects", async () => {
     const instance = await startServer({ cookieName: "custom-auth" });
-    const res = await manualFetch(`${instance.baseUrl}/auth/login`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/x-www-form-urlencoded",
+    const res = await manualFetch(
+      `${instance.baseUrl}/auth/login?app=Actual%20Auto%20Categorise&cookie=categorise-auth`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: "password=secret&next=%2Fdashboard",
       },
-      body: "password=secret&next=%2Fdashboard",
-    });
+    );
     await instance.close();
 
     expect(res.status).toBe(302);
@@ -110,39 +145,62 @@ describe("createAuthServer", () => {
       /http:\/\/127\.0\.0\.1:\d+\/dashboard/,
     );
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
-    expect(res.headers["set-cookie"][0]).toMatch(/^custom-auth=/);
+    expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=/);
   });
 
-  test("cookie name header override is respected", async () => {
-    const instance = await startServer({ cookieName: "default-cookie" });
+  test("successful login uses headers when query missing", async () => {
+    const instance = await startServer();
     const res = await manualFetch(`${instance.baseUrl}/auth/login`, {
       method: "POST",
       headers: {
         "content-type": "application/x-www-form-urlencoded",
-        "x-actual-cookie-name": "categorise-auth",
+        "x-actual-app-name": "Header App",
+        "x-actual-cookie-name": "header-cookie",
       },
-      body: "password=secret&next=/",
+      body: "password=secret&next=%2Fhome",
     });
     await instance.close();
 
     expect(res.status).toBe(302);
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
-    expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=/);
+    expect(res.headers["set-cookie"][0]).toMatch(/^header-cookie=/);
   });
 
   test("invalid login renders error and 401", async () => {
     const instance = await startServer({ appName: "Actual Auto Stack" });
-    const res = await manualFetch(`${instance.baseUrl}/auth/login`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/x-www-form-urlencoded",
+    const res = await manualFetch(
+      `${instance.baseUrl}/auth/login?app=Actual%20Auto%20Stack&cookie=stack-auth`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: "password=wrong&next=%2F",
       },
-      body: "password=wrong&next=%2F",
-    });
+    );
     await instance.close();
 
     expect(res.status).toBe(401);
     expect(res.body).toContain("Invalid password");
     expect(res.body).toContain("Actual Auto Stack");
+    expect(res.body).toContain(
+      'action="/auth/login?app=Actual+Auto+Stack&amp;cookie=stack-auth"',
+    );
+  });
+
+  test("logout clears override cookie", async () => {
+    const instance = await startServer();
+    const res = await manualFetch(
+      `${instance.baseUrl}/auth/logout?app=Actual%20Auto%20Categorise&cookie=categorise-auth`,
+      { method: "POST" },
+    );
+    await instance.close();
+
+    expect(res.status).toBe(302);
+    expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
+    expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=;/);
+    expect(res.headers.location).toMatch(
+      /\/auth\/login\?app=Actual\+Auto\+Categorise&cookie=categorise-auth$/,
+    );
   });
 });

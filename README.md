@@ -106,7 +106,7 @@ Then attach your upstream service router to `middlewares=actual-forward@docker`.
 > traefik.http.routers.categorise.middlewares=categorise-chain@docker
 > ```
 >
-> Update the downstream service so `AUTH_COOKIE_NAME` matches the value you send via `X-Actual-Cookie-Name`. `X-Actual-App-Name` overrides the login heading dynamically, while `AUTH_APP_NAME` remains the fallback.
+> When using forward-auth, pass `app`/`cookie` query parameters (e.g. `http://actual-auto-auth:4000/check?app=Actual%20Auto%20Categorise&cookie=categorise-auth`) so login, logout, and cookie issuance stay aligned per service. Downstream services should read the same cookie name (e.g. `AUTH_COOKIE_NAME=categorise-auth`) when deciding whether to show logout controls.
 
 ## Testing & linting
 

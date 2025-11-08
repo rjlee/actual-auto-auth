@@ -7,12 +7,18 @@ function escapeHtml(value = "") {
     .replace(/'/g, "&#39;");
 }
 
-function renderLoginPage({ appName, error = "", next = "/" }) {
+function renderLoginPage({
+  appName,
+  error = "",
+  next = "/",
+  formAction = "/auth/login",
+}) {
   const safeName = escapeHtml(appName);
   const safeError = error
     ? `<div class="alert alert-danger text-center">${escapeHtml(error)}</div>`
     : "";
   const safeNext = escapeHtml(next);
+  const safeAction = escapeHtml(formAction);
 
   return `<!doctype html>
 <html lang="en">
@@ -35,7 +41,7 @@ function renderLoginPage({ appName, error = "", next = "/" }) {
             <div class="card-body">
               <h1 class="h4 text-center mb-4">${safeName}</h1>
               ${safeError}
-              <form method="post" action="/auth/login">
+              <form method="post" action="${safeAction}">
                 <input type="hidden" name="next" value="${safeNext}" />
                 <div class="mb-3">
                   <input

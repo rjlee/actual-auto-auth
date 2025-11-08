@@ -113,14 +113,27 @@ function createAuthServer(options = {}) {
       req.url,
       `http://${req.headers.host || "localhost"}`,
     );
+    const queryAppName =
+      parsedUrl.searchParams.get("app")?.toString().trim() ?? "";
+    const queryCookieName =
+      parsedUrl.searchParams.get("cookie")?.toString().trim() ?? "";
     const headerAppName = (req.headers["x-actual-app-name"] ?? "")
       .toString()
       .trim();
     const headerCookieName = (req.headers["x-actual-cookie-name"] ?? "")
       .toString()
       .trim();
-    const effectiveAppName = headerAppName || appName;
-    const requestCookieName = headerCookieName || cookieName;
+    const effectiveAppName = queryAppName || headerAppName || appName;
+    const requestCookieName = queryCookieName || headerCookieName || cookieName;
+    const baseParams = new URLSearchParams();
+    if (effectiveAppName) {
+      baseParams.set("app", effectiveAppName);
+    }
+    if (requestCookieName) {
+      baseParams.set("cookie", requestCookieName);
+    }
+    const baseQuerySuffix =
+      baseParams.toString().length > 0 ? `?${baseParams.toString()}` : "";
 
     if (req.method === "GET" && parsedUrl.pathname === "/check") {
       const cookies = parseCookies(req.headers.cookie);
@@ -135,8 +148,11 @@ function createAuthServer(options = {}) {
       }
       const forwardedUri = req.headers["x-forwarded-uri"] || "/";
       const nextPath = normaliseNextPath(forwardedUri);
-      const next = encodeURIComponent(nextPath);
-      buildRedirect(req, res, `/auth/login?next=${next}`);
+      const loginParams = new URLSearchParams(baseParams);
+      loginParams.set("next", nextPath);
+      const loginQuery =
+        loginParams.toString().length > 0 ? `?${loginParams.toString()}` : "";
+      buildRedirect(req, res, `/auth/login${loginQuery}`);
       return;
     }
 
@@ -153,6 +169,7 @@ function createAuthServer(options = {}) {
       const page = renderLoginPage({
         appName: effectiveAppName,
         next: normaliseNextPath(parsedUrl.searchParams.get("next") || "/"),
+        formAction: `/auth/login${baseQuerySuffix}`,
       });
       res.statusCode = 200;
       res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -170,6 +187,7 @@ function createAuthServer(options = {}) {
           appName: effectiveAppName,
           error: "Invalid password",
           next: nextPath,
+          formAction: `/auth/login${baseQuerySuffix}`,
         });
         res.statusCode = 401;
         res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -199,7 +217,7 @@ function createAuthServer(options = {}) {
           secureOnly: enforceSecureCookies,
         })}`,
       );
-      buildRedirect(req, res, "/auth/login");
+      buildRedirect(req, res, `/auth/login${baseQuerySuffix}`);
       return;
     }
 
