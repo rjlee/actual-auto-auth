@@ -59,8 +59,7 @@ function cookieFlags(req, { maxAgeSeconds, secureOnly }) {
     `Max-Age=${maxAgeSeconds}`,
   ];
 
-  const forwardedProto = req.headers["x-forwarded-proto"];
-  if (secureOnly || forwardedProto === "https") {
+  if (secureOnly) {
     flags.push("Secure");
   }
 
