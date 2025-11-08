@@ -5,6 +5,7 @@ WORKDIR /app
 ENV HUSKY=0
 
 COPY package.json package-lock.json ./
+ENV HUSKY=0
 RUN npm ci --omit=dev --no-audit --no-fund
 
 FROM node:22.14.0-slim AS runner
