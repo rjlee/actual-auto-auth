@@ -1,0 +1,11 @@
+services:
+  actual-auto-auth:
+    build: .
+    container_name: actual-auto-auth
+    env_file:
+      - .env
+    environment:
+      PORT: ${PORT:-4000}
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    restart: unless-stopped
