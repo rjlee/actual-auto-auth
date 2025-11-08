@@ -82,7 +82,11 @@ function absoluteUrl(req, target) {
 
 function buildRedirect(req, res, target) {
   res.statusCode = 302;
-  res.setHeader("Location", absoluteUrl(req, target));
+  if (target.startsWith("/")) {
+    res.setHeader("Location", target);
+  } else {
+    res.setHeader("Location", absoluteUrl(req, target));
+  }
   res.end();
 }
 
