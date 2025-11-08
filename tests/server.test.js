@@ -79,7 +79,7 @@ describe("createAuthServer", () => {
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe(
-      "/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth&next=%2Fdashboard",
+      "http://stack.local:3000/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth&next=%2Fdashboard",
     );
   });
 
@@ -148,7 +148,7 @@ describe("createAuthServer", () => {
     await instance.close();
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe("/dashboard");
+    expect(res.headers.location).toBe("http://stack.local:3000/dashboard");
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=/);
   });
@@ -205,7 +205,7 @@ describe("createAuthServer", () => {
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=;/);
     expect(res.headers.location).toBe(
-      "/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth",
+      "http://stack.local:3000/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth",
     );
   });
 });
