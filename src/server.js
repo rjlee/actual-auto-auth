@@ -2,6 +2,7 @@ const http = require("http");
 const crypto = require("crypto");
 const { URL, URLSearchParams } = require("url");
 const { renderLoginPage } = require("./login-page");
+const { renderHomePage, DEFAULT_TITLE } = require("./home-page");
 
 const DEFAULT_COOKIE_NAME = "actual-auth";
 const DEFAULT_APP_NAME = "Actual Service";
@@ -96,6 +97,36 @@ function normaliseNextPath(next = "/") {
   return next.startsWith("/") ? next : `/${next}`;
 }
 
+function normaliseLinkHref(raw = "") {
+  const href = raw.toString().trim();
+  if (!href) return null;
+  if (/^https?:\/\//i.test(href)) return href;
+  if (href.startsWith("/")) return href;
+  return `/${href}`;
+}
+
+function normaliseHomeLinks(links = []) {
+  const seen = new Set();
+  return links
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") {
+        return null;
+      }
+      const name = (entry.name ?? "").toString().trim();
+      const href = normaliseLinkHref(entry.href);
+      if (!name || !href) {
+        return null;
+      }
+      const key = `${name}|${href}`;
+      if (seen.has(key)) {
+        return null;
+      }
+      seen.add(key);
+      return { name, href };
+    })
+    .filter(Boolean);
+}
+
 function createAuthServer(options = {}) {
   const {
     actualPassword,
@@ -104,6 +135,8 @@ function createAuthServer(options = {}) {
     appName = DEFAULT_APP_NAME,
     cookieMaxAgeSeconds = 24 * 60 * 60,
     enforceSecureCookies = false,
+    homeTitle,
+    homeLinks = [],
   } = options;
 
   if (!actualPassword) {
@@ -115,6 +148,13 @@ function createAuthServer(options = {}) {
   const signingSecret =
     sessionSecret ||
     crypto.createHash("sha256").update(actualPassword).digest("hex");
+
+  const resolvedHomeTitle = (homeTitle || DEFAULT_TITLE).toString().trim() || DEFAULT_TITLE;
+  const resolvedLinks = normaliseHomeLinks(homeLinks);
+  const defaultLinks =
+    resolvedLinks.length > 0
+      ? resolvedLinks
+      : [{ name: "Traefik Dashboard", href: "/dashboard/" }];
 
   const server = http.createServer(async (req, res) => {
     const parsedUrl = new URL(
@@ -142,6 +182,38 @@ function createAuthServer(options = {}) {
     }
     const baseQuerySuffix =
       baseParams.toString().length > 0 ? `?${baseParams.toString()}` : "";
+
+    if (
+      (req.method === "GET" || req.method === "HEAD") &&
+      parsedUrl.pathname === "/"
+    ) {
+      const cookies = parseCookies(req.headers.cookie);
+      const sessionValue = readCookie(
+        cookies[requestCookieName],
+        signingSecret,
+      );
+      if (!sessionValue) {
+        const params = new URLSearchParams(baseParams);
+        params.set("next", "/");
+        const loginQuery =
+          params.toString().length > 0 ? `?${params.toString()}` : "";
+        buildRedirect(req, res, `/auth/login${loginQuery}`);
+        return;
+      }
+
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      if (req.method === "HEAD") {
+        res.end();
+        return;
+      }
+      const page = renderHomePage({
+        title: resolvedHomeTitle,
+        links: defaultLinks,
+      });
+      res.end(page);
+      return;
+    }
 
     if (req.method === "GET" && parsedUrl.pathname === "/check") {
       const cookies = parseCookies(req.headers.cookie);
