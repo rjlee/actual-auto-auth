@@ -149,7 +149,8 @@ function createAuthServer(options = {}) {
     sessionSecret ||
     crypto.createHash("sha256").update(actualPassword).digest("hex");
 
-  const resolvedHomeTitle = (homeTitle || DEFAULT_TITLE).toString().trim() || DEFAULT_TITLE;
+  const resolvedHomeTitle =
+    (homeTitle || DEFAULT_TITLE).toString().trim() || DEFAULT_TITLE;
   const resolvedLinks = normaliseHomeLinks(homeLinks);
   const defaultLinks =
     resolvedLinks.length > 0
