@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/rjlee/actual-auto-auth/compare/v1.0.1...v1.0.2) (2025-11-08)
+
+
+### Bug Fixes
+
+* adding prettier rules ([94bfc1e](https://github.com/rjlee/actual-auto-auth/commit/94bfc1eb6c3f1f7845d6a3ae1f8060499ecbe1c0))
+* fix husky install related failure ([8baf2af](https://github.com/rjlee/actual-auto-auth/commit/8baf2afa72500ea88cade2bbb4fca81ffa41f713))
+
 ## [1.0.1](https://github.com/rjlee/actual-auto-auth/compare/v1.0.0...v1.0.1) (2025-11-08)
 
 
