@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/rjlee/actual-auto-auth/compare/v1.0.3...v1.0.4) (2025-11-08)
+
+
+### Bug Fixes
+
+* Fixing routing issues ([e8a1a78](https://github.com/rjlee/actual-auto-auth/commit/e8a1a78069f92b01469e0e6ff47531c31c3425ec))
+
 ## [1.0.3](https://github.com/rjlee/actual-auto-auth/compare/v1.0.2...v1.0.3) (2025-11-08)
 
 
