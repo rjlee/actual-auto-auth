@@ -72,20 +72,17 @@ function absoluteUrl(req, target) {
     return target;
   }
   const proto = req.headers["x-forwarded-proto"] || "http";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  const host =
+    req.headers["x-forwarded-host"] ||
+    req.headers.host ||
+    `${req.socket.localAddress}:${req.socket.localPort}`;
   const path = target.startsWith("/") ? target : `/${target}`;
   return `${proto}://${host}${path}`;
 }
 
 function buildRedirect(req, res, target) {
   res.statusCode = 302;
-  if (target.startsWith("http://") || target.startsWith("https://")) {
-    res.setHeader("Location", target);
-  } else if (target.startsWith("/")) {
-    res.setHeader("Location", target);
-  } else {
-    res.setHeader("Location", absoluteUrl(req, target));
-  }
+  res.setHeader("Location", absoluteUrl(req, target));
   res.end();
 }
 

@@ -21,6 +21,10 @@ async function startServer(options = {}) {
 }
 
 function manualFetch(url, options = {}) {
+  const defaultForwardHeaders = {
+    "x-forwarded-host": "stack.local:3000",
+    "x-forwarded-proto": "http",
+  };
   return new Promise((resolve, reject) => {
     const requestUrl = new URL(url);
     const req = http.request(
@@ -29,7 +33,10 @@ function manualFetch(url, options = {}) {
         port: requestUrl.port,
         path: requestUrl.pathname + requestUrl.search,
         method: options.method || "GET",
-        headers: options.headers,
+        headers: {
+          ...defaultForwardHeaders,
+          ...(options.headers || {}),
+        },
       },
       (res) => {
         const chunks = [];
@@ -72,7 +79,7 @@ describe("createAuthServer", () => {
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe(
-      "/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth&next=%2Fdashboard",
+      "http://stack.local:3000/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth&next=%2Fdashboard",
     );
   });
 
@@ -141,7 +148,7 @@ describe("createAuthServer", () => {
     await instance.close();
 
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe("/dashboard");
+    expect(res.headers.location).toBe("http://stack.local:3000/dashboard");
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=/);
   });
@@ -198,7 +205,7 @@ describe("createAuthServer", () => {
     expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     expect(res.headers["set-cookie"][0]).toMatch(/^categorise-auth=;/);
     expect(res.headers.location).toBe(
-      "/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth",
+      "http://stack.local:3000/auth/login?app=Actual+Auto+Categorise&cookie=categorise-auth",
     );
   });
 });
