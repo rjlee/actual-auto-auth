@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/rjlee/actual-auto-auth/compare/v1.0.5...v1.0.6) (2025-11-08)
+
+
+### Bug Fixes
+
+* fixing path routing ([80e5ae1](https://github.com/rjlee/actual-auto-auth/commit/80e5ae14020c01dcd90cfeae961818d355521664))
+
 ## [1.0.5](https://github.com/rjlee/actual-auto-auth/compare/v1.0.4...v1.0.5) (2025-11-08)
 
 
