@@ -71,9 +71,15 @@ function absoluteUrl(req, target) {
   if (/^https?:\/\//i.test(target)) {
     return target;
   }
-  const proto = req.headers["x-forwarded-proto"] || "http";
+  const proto =
+    req.headers["x-forwarded-proto"] ||
+    req.headers["x-forwarded-protocol"] ||
+    req.headers["x-forwarded-scheme"] ||
+    req.headers["forwarded-proto"] ||
+    "http";
   const host =
     req.headers["x-forwarded-host"] ||
+    req.headers["forwarded-host"] ||
     req.headers.host ||
     `${req.socket.localAddress}:${req.socket.localPort}`;
   const path = target.startsWith("/") ? target : `/${target}`;
@@ -82,11 +88,7 @@ function absoluteUrl(req, target) {
 
 function buildRedirect(req, res, target) {
   res.statusCode = 302;
-  if (target.startsWith("/")) {
-    res.setHeader("Location", target);
-  } else {
-    res.setHeader("Location", absoluteUrl(req, target));
-  }
+  res.setHeader("Location", absoluteUrl(req, target));
   res.end();
 }
 
