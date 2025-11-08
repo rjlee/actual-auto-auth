@@ -1,3 +1,11 @@
+## [1.0.10](https://github.com/rjlee/actual-auto-auth/compare/v1.0.9...v1.0.10) (2025-11-08)
+
+
+### Bug Fixes
+
+* fixing linting error ([008285c](https://github.com/rjlee/actual-auto-auth/commit/008285c6caf4f77bc2135fe7a1b8327299544037))
+* fixing test ([add050a](https://github.com/rjlee/actual-auto-auth/commit/add050a8f6d7220a1bab0b4448ba6c035c768065))
+
 ## [1.0.9](https://github.com/rjlee/actual-auto-auth/compare/v1.0.8...v1.0.9) (2025-11-08)
 
 
