@@ -3,10 +3,10 @@ name: Docker build
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ['Release']
+    workflows: ["Release"]
     types: [completed]
   schedule:
-    - cron: '0 23 * * *'
+    - cron: "0 23 * * *"
 
 jobs:
   docker:

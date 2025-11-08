@@ -2,15 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   ci:
     uses: rjlee/actual-auto-ci/.github/workflows/ci.yml@v1
     with:
-      node-version: '22.14.0'
+      node-version: "22.14.0"
       package-manager: npm
       lint: true
       format-check: true

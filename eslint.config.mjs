@@ -1,21 +1,21 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import prettierPlugin from 'eslint-plugin-prettier';
+import js from "@eslint/js";
+import globals from "globals";
+import prettierPlugin from "eslint-plugin-prettier";
 
 const baseConfig = js.configs.recommended;
 const baseLanguageOptions = baseConfig.languageOptions ?? {};
 
 export default [
   {
-    ignores: ['node_modules/', 'coverage/', 'dist/'],
+    ignores: ["node_modules/", "coverage/", "dist/"],
   },
   {
     ...baseConfig,
-    files: ['**/*.js'],
+    files: ["**/*.js"],
     languageOptions: {
       ...baseLanguageOptions,
       ecmaVersion: 2022,
-      sourceType: 'commonjs',
+      sourceType: "commonjs",
       globals: {
         ...baseLanguageOptions.globals,
         ...globals.node,
@@ -26,11 +26,11 @@ export default [
     },
     rules: {
       ...baseConfig.rules,
-      'prettier/prettier': 'error',
+      "prettier/prettier": "error",
     },
   },
   {
-    files: ['tests/**/*.js'],
+    files: ["tests/**/*.js"],
     languageOptions: {
       ...baseLanguageOptions,
       globals: {
@@ -43,7 +43,7 @@ export default [
       prettier: prettierPlugin,
     },
     rules: {
-      'prettier/prettier': 'error',
+      "prettier/prettier": "error",
     },
   },
 ];
