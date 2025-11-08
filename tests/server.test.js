@@ -70,7 +70,19 @@ describe("createAuthServer", () => {
         { name: "Actual Auto Categorise", href: "/categorise/" },
       ],
     });
-    const res = await manualFetch(`${instance.baseUrl}/`);
+    const login = await manualFetch(`${instance.baseUrl}/auth/login`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      body: "password=secret&next=%2F",
+    });
+    const cookieHeader = login.headers["set-cookie"]?.[0] || "";
+    const res = await manualFetch(`${instance.baseUrl}/`, {
+      headers: {
+        Cookie: cookieHeader.split(";")[0],
+      },
+    });
     await instance.close();
 
     expect(res.status).toBe(200);
@@ -83,7 +95,20 @@ describe("createAuthServer", () => {
     const instance = await startServer({
       homeLinks: [{ name: "Dashboard", href: "/dashboard/" }],
     });
-    const res = await manualFetch(`${instance.baseUrl}/`, { method: "HEAD" });
+    const login = await manualFetch(`${instance.baseUrl}/auth/login`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      body: "password=secret&next=%2F",
+    });
+    const cookieHeader = login.headers["set-cookie"]?.[0] || "";
+    const res = await manualFetch(`${instance.baseUrl}/`, {
+      method: "HEAD",
+      headers: {
+        Cookie: cookieHeader.split(";")[0],
+      },
+    });
     await instance.close();
 
     expect(res.status).toBe(200);
